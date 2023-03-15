@@ -1,45 +1,50 @@
 import os
 import csv
-Candidate=[]
-csvpath = os.path.join('PyPoll','Resources','election_data.csv')
-with open(csvpath) as csvfile:
-    csvreader=csv.reader(csvfile,delimiter=',')
-    #print (csvreader)
-    csv_header=next(csvreader)
-    print(f"CSV Header:{csv_header}")
-    for row in csvreader:
-        Candidate.append(row[2])
-    #print(Candidate) 
-    print(f"Election Results")
-    print(f"------------------------------------------")
-    length = len(Candidate)
-    print(f"Total Votes: {length}") 
-    print(f"------------------------------------------")
-    Charles=[]
-    Diana=[]
-    Raymon=[]
-    for candid in Candidate:
-        if candid == "Charles Casper Stockham":
-            Charles.append(candid)
-        elif candid == "Diana DeGette":
-            Diana.append(candid)
-        else:
-            Raymon.append(candid)
-    #print(len(Charles))
-    #print(len(Diana))
-    #print(len(Raymon))
-    charles_percent= (len(Charles)/length)*100
-    diana_percent= (len(Diana)/length)*100
-    Raymon_percent= (len(Raymon)/length)*100
-    print(f"Charles Casper Stockham:  {(round(charles_percent,3))}% ({len(Charles)})")
-    print(f"Diana DeGette:  {(round(diana_percent,3))}% ({len(Diana)})")       
-    print(f"Raymon Anthony Doane:  {(round(Raymon_percent,3))}% ({len(Raymon)})")    
-    print(f"------------------------------------------")
-    if len(Charles)> len(Diana) and len(Charles)>len(Raymon):
-        print(f"Winner: Charles Casper Stockham")
-    elif len(Diana)> len(Charles) and len(Diana)>len(Raymon):
-        print(f"Winner: Diana DeGette")
-    else:
-        print(f"Winner: Raymon Anthony Doane")
-        
+import numpy as np
 
+#Define Variables
+NAME_INDEX = 2
+Candidate=[]
+
+#Set input and output paths
+CSV_PATH = os.path.join('Resources','election_data.csv')
+OUTPUT_PATH = os.path.join("analysis","Results.txt")
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
+#Read the file and append into lists of unique Candidates
+with open(CSV_PATH) as csvfile:
+    csvreader = csv.reader(csvfile,delimiter=',')
+    csv_header = next(csvreader)
+    for row in csvreader:
+        Candidate.append(row[NAME_INDEX])
+candidate_list=np.unique([Candidate], return_index = True)     
+print(f"Election Results")
+print(f"------------------------------------------")
+length = len(Candidate)
+print(f"Total Votes: {length}") 
+print(f"------------------------------------------")
+count = np.unique(Candidate, return_counts=True)
+candidates_dictionary = {}
+
+#Calculate total votes and percentages per Candidate. Determine the Winner
+with open(OUTPUT_PATH, 'w') as output_file:
+    output_file.write("Election Results\n")
+    output_file.write("------------------------------------------\n")
+    output_file.write("Total Votes:"+ str(length)+"\n")
+    output_file.write("------------------------------------------\n")
+    for i in range(len(count)+1):
+        candidates_dictionary[count[0][i]] = count[1][i]
+        key_list = list(candidates_dictionary.keys())
+        percent = round((count[1][i]/length)*100,3)
+        results = (f'{key_list[i]}: {percent}% ({count[1][i]})\n')
+        output_file.write(results)
+        print(results)
+    print(f"------------------------------------------")
+    max_value = max(candidates_dictionary, key=lambda x:candidates_dictionary[x])
+    print(f'Winner: {max_value}')
+    print(f"------------------------------------------")
+    output_file.write("------------------------------------------\n")
+    output_file.write("Winner:"+ str(max_value)+"\n")
+    output_file.write("------------------------------------------\n")
+ 
+    
